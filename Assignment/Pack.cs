@@ -1,163 +1,88 @@
 ﻿namespace Assignment;
 
+
+using System;
+public class InventoryItem
+{
+    public string Name { get; }
+    public double Weight { get; }
+    public double Volume { get; }
+
+    public InventoryItem(string name, double weight, double volume)
+    {
+        Name = name;
+        Weight = weight;
+        Volume = volume;
+    }
+}
+public class Arrow : InventoryItem
+{
+    public Arrow() : base("Arrow", 0.1, 0.01)
+    {
+    }
+}
+
 public class Pack
 {
-    private readonly InventoryItem[] _items; // You can use another data structure here if you prefer.
-    // You may need another private member variable if you use an array data structure.
+    private List<InventoryItem> _items;
 
-    private readonly int _maxCount;
-    private readonly float _maxVolume;
-    private readonly float _maxWeight;
-    private int _currentCount; // Defaults to 0
-    private float _currentVolume;
-    private float _currentWeight;
+    public int MaxCount { get; }
+    public double MaxVolume { get; }
+    public double MaxWeight { get; }
 
-
-    // Default constructor sets the maxCount to 10 
-    // maxVolume to 20 
-    // maxWeight to 30
-    public Pack() : this(10, 20, 30) { }
-
-    // This constructor is not complete, but it is a good start.
-    public Pack(int maxCount, float maxVolume, float maxWeight)
+    public Pack(int maxCount, double maxVolume, double maxWeight)
     {
-        _items = new InventoryItem[maxCount];
-        _maxCount = maxCount;
-        _maxVolume = maxVolume;
-        _maxWeight = maxWeight;
-    }
+        MaxCount = maxCount;
+        MaxVolume = maxVolume;
+        MaxWeight = maxWeight;
 
-    // This is called a getter
-    public int GetMaxCount()
-    {
-        return _maxCount;
-    }
-
-    public float GetVolume()
-    {
-        return _currentVolume;
+        _items = new List<InventoryItem>();
     }
 
     public bool Add(InventoryItem item)
     {
-        // In the `Add` method, check if adding the item would exceed the pack's 
-        // maximum count, weight, or volume. If it would not exceed these limits, 
-        // add the item to the pack and return `true`. Otherwise, return `false`.
-
-        // Does the current item cause _currentCount to be > _maxCount ... same for vol. and weight
-        // if the new item will exceed these parameters, return false
-        // else add it to the _items array and return true.
-
-        // Do your logic to ensure the item can be added
-        float weight = item.GetWeight();
-        float volume = item.GetVolume();
-        if (volume <= _maxVolume)
+        if (_items.Count >= MaxCount || GetCurrentWeight() + item.Weight > MaxWeight ||
+            GetCurrentVolume() + item.Volume > MaxVolume)
         {
-            _currentWeight += weight;
-            _currentVolume += volume;
-            _items[_currentCount++] = item;
-            return true;
+            return false;
         }
-        return false;
 
+        _items.Add(item);
+        return true;
     }
 
-    // Implement this class
+    private double GetCurrentWeight()
+    {
+        double weight = 0;
+        foreach (var item in _items)
+        {
+            weight += item.Weight;
+        }
+        return weight;
+    }
+
+    private double GetCurrentVolume()
+    {
+        double volume = 0;
+        foreach (var item in _items)
+        {
+            volume += item.Volume;
+        }
+        return volume;
+    }
+
     public override string ToString()
     {
-        throw new NotImplementedException();
-    }
-}
-
-// Come back to this once we learn about abstract classes.
-public abstract class InventoryItem
-{
-    private readonly float _volume;
-    private readonly float _weight;
-
-    protected InventoryItem(float volume, float weight)
-    {
-        if (volume <= 0f || weight <= 0f)
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("Pack Contents:");
+        foreach (var item in _items)
         {
-            throw new ArgumentOutOfRangeException($"An item can't have {volume} volume or {weight} weight");
+            sb.AppendLine($"- {item.Name}: Weight={item.Weight}, Volume={item.Volume}");
         }
-        _volume = volume;
-        _weight = weight;
-    }
-
-    // Returns a string representing the quantities of the item (volume & weight of the item)
-    public abstract string Display();
-
-    // Getters
-    public float GetVolume()
-    {
-        return _volume;
-    }
-
-    public float GetWeight()
-    {
-        return _weight;
+        sb.AppendLine($"Current Weight: {GetCurrentWeight()} / {MaxWeight}");
+        sb.AppendLine($"Current Volume: {GetCurrentVolume()} / {MaxVolume}");
+        sb.AppendLine($"Remaining Capacity: {MaxCount - _items.Count} items");
+        return sb.ToString();
     }
 }
 
-// Implement these classes - each inherits from InventoryItem
-// 1 line of code each - call base class constructor with appropriate arguments
-public class Arrow : InventoryItem
-{
-    public Arrow() : base(0.5f, 0.1f) { }
-
-    public override string Display()
-    {
-        return $"An arrow with weight {GetWeight()} and volume {GetVolume()}";
-    }
-}
-
-public class Bow : InventoryItem
-{
-    public Bow() : base(1f, 4f) { }
-
-    public override string Display()
-    {
-        return $"A bow with weight {GetWeight()} and volume {GetVolume()}";
-    }
-}
-
-public class Rope : InventoryItem
-{
-    public Rope() : base(1f, 1.5f) { }
-
-    public override string Display()
-    {
-        return $"A rope with weight {GetWeight()} and volume {GetVolume()}";
-    }
-}
-
-public class Water : InventoryItem
-{
-    public Water() : base(2f, 3f) { }
-
-    public override string Display()
-    {
-        return $"Water with weight {GetWeight()} and volume {GetVolume()}";
-    }
-}
-
-public class Food : InventoryItem
-{
-    public Food() : base(1f, 0.5f) { }
-
-    public override string Display()
-    {
-        return $"Yummy food with weight {GetWeight()} and volume {GetVolume()}";
-    }
-}
-
-public class Sword : InventoryItem
-{
-    public Sword() : base(5f, 3f) { }
-
-    public override string Display()
-    {
-        return $"A sharp sword with weight {GetWeight()} and volume {GetVolume()}";
-    }
-}
